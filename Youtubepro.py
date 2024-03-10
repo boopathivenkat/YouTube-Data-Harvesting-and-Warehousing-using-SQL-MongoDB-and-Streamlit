@@ -479,24 +479,42 @@ def show_comments_table():
 
 
 
-st.header("YouTube Data Harvesting and Warehousing",divider='rainbow')
+st.header("         YouTube Data Harvesting and Warehousing",divider='rainbow')
 st.balloons()
 
+
+
 with st.sidebar:
-    st.caption("Python scripting")
-    st.caption("Data Collection")
-    st.caption("MongoDB")
-    st.caption("API Integration")
-    st.caption("Data Management using MongoDB and SQL")
+    st.image("https://icons8.com/icon/qLVB1tIe9Ts9/youtube.svg", width=300)
+    st.title("YouTube")
+    st.subheader('', divider='rainbow')
+
+    st.caption("1. Users Giving to the Chennels ID")
+    st.caption("2. Retrieving Data From Youtube API")
+    st.caption("3. Store the Data In Mongo DB Collection")
+    st.caption("4. Migrating data to a Postgres SQL warehouse")
+    st.caption("5. Data Analysis")
+    st.caption("6. SQL Queries")
+    
+    
 
 channel_id = st.text_input("Enter the Channel id")
 
 col1, col2 ,col3= st.columns(3)
 
 if col1.button(":green[Collect and Store data]"):
-     mongo=mongo_upload(channel_id)
-     mongo
+    ch_ids=[]
+    db = client["Youtube_Pro"]
+    coll = db["Youtube_data"]
+    for ch_data in coll.find({},{"_id":0,"channel_information":1}):
+         ch_ids.append(ch_data["channel_information"]["Channel_Id"])
+         
+    if channel_id in ch_ids:
+        st.success(":red[This Channels Id already exists, Please Enter the Other valid Channels ID ...]")
 
+    else:
+        insert=mongo_upload(channel_id) 
+        st.success(insert) 
 
 
 client = pymongo.MongoClient("mongodb+srv://boopathi:Boo758595@guvi.rozmoe3.mongodb.net/?retryWrites=true&w=majority&appName=Guvi")
@@ -571,6 +589,7 @@ elif show_table == (":rainbow[Comments]"):
     show_comments_table()
 
 
+
 mydb = psycopg2.connect(host="localhost",
             user="postgres",
             password="758595",
@@ -579,17 +598,16 @@ mydb = psycopg2.connect(host="localhost",
             )
 cursor  = mydb. cursor ()
 
-
 question=st.selectbox("Select your question",("1. All the videos and the channel name",
-                                              "2. channels with most number of videos",
-                                              "3. 10 most viewed videos",
-                                              "4. comments in each videos",
-                                              "5. Videos with higest likes",
-                                              "6. likes of all videos",
-                                              "7. views of each channel",
-                                              "8. videos published in the year of 2022",
-                                              "9. average duration of all videos in each channel",
-                                              "10. videos with highest number of comments"))
+                                            "2. channels with most number of videos",
+                                            "3. 10 most viewed videos",
+                                            "4. comments in each videos",
+                                            "5. Videos with higest likes",
+                                            "6. likes of all videos",
+                                            "7. views of each channel",
+                                            "8. videos published in the year of 2022",
+                                            "9. average duration of all videos in each channel",
+                                            "10. videos with highest number of comments"))
 
 if question=="1. All the videos and the channel name":
     query1='''select title as videos,channel_name as channelname from videos'''
@@ -683,3 +701,5 @@ elif question=="10. videos with highest number of comments":
     t10=cursor.fetchall()
     df10=pd.DataFrame(t10,columns=["video title","channel name","comments"])
     st.write(df10)
+
+

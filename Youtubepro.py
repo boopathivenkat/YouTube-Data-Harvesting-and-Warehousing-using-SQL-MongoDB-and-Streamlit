@@ -169,7 +169,7 @@ def mongo_upload(channel_id):
     coll.insert_one({"channel_information":ch_details,"playlist_information":pl_details,"video_information":vi_details,
                      "comment_information":com_details})
     
-    return "All Channels Data upload in Mongo DB completed successfully"
+    return "Channels all Data upload in Mongo DB completed successfully"
 
 
 
@@ -433,7 +433,7 @@ def tables_upload():
     videos_table()
     comments_table()
 
-    return "All Channels Data Tables Create in Postgres SQL completed successfully"
+    return "Channels all Data Tables Create in Postgres SQL completed successfully"
 
 
 

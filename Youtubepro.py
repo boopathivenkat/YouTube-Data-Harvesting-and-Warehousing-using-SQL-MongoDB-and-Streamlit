@@ -477,16 +477,13 @@ def show_comments_table():
     return comments_table
 
 
+import streamlit as st 
 
-
-st.header("         YouTube Data Harvesting and Warehousing",divider='rainbow')
+st.header("    YouTube Data Harvesting and Warehousing",divider='rainbow')
 st.balloons()
 
-
-
 with st.sidebar:
-    st.image("https://icons8.com/icon/qLVB1tIe9Ts9/youtube.svg", width=300)
-    st.title("YouTube")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",use_column_width=True)
     st.subheader('', divider='rainbow')
 
     st.caption("1. Users Giving to the Chennels ID")
@@ -574,18 +571,18 @@ if col3.button(':red[Page Refresh]'):
     simulate_loading()
     st.success('Page refresh successfully!')
 
-show_table = st.radio("Choose the Table for view",((":rainbow[Channels]"),(":rainbow[Playlists]"),(":rainbow[Videos]"),(":rainbow[Comments]")))
+show_table = st.radio("Choose the Table for view",((":green[Channels]"),(":orange[Playlists]"),(":violet[Videos]"),(":grey[Comments]")))
 
-if show_table ==(":rainbow[Channels]"): 
+if show_table ==(":green[Channels]"): 
     show_channels_table()
 
-elif show_table == (":rainbow[Playlists]"):
+elif show_table == (":orange[Playlists]"):
     show_playlists_table()
 
-elif show_table == (":rainbow[Videos]"):
+elif show_table == (":violet[Videos]"):
     show_videos_table()
 
-elif show_table == (":rainbow[Comments]"):
+elif show_table == (":grey[Comments]"):
     show_comments_table()
 
 

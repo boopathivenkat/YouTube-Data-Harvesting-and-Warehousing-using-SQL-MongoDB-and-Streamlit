@@ -490,7 +490,7 @@ st.header("YouTube Data Harvesting and Warehousing",divider='rainbow')
 
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",width=180)
+    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",width=195)
     st.page_link("https://www.youtube.com/", label=":green[Click here! Get Channels Id get from YouTube ]")
     st.subheader('', divider='rainbow')
 
@@ -577,9 +577,10 @@ def migrate_to_sql(channel_name):
                 values
             )
             mydb.commit()
-            return "Data migrated successfully."
+            return "All Data Migrated to Postgres SQL Tables Created Successfully."
+        
     except IntegrityError as e:
-        return "Given channel details already exists."
+        return ":red[This Channel details already exists.Please Select the Other Valid Channels Details.]"
     
 
 all_channels = []
@@ -605,6 +606,8 @@ def simulate_loading():
         simulate_loading()
         st.success('Page refresh successfully!')
 
+
+
 show_table = st.radio("Choose the Table for view",((":green[Channels]"),(":orange[Playlists]"),(":violet[Videos]"),(":blue[Comments]")))
 
 if show_table ==(":green[Channels]"): 
@@ -612,6 +615,7 @@ if show_table ==(":green[Channels]"):
 
 elif show_table == (":orange[Playlists]"):
     show_playlists_table()
+    
 
 elif show_table == (":violet[Videos]"):
     show_videos_table()

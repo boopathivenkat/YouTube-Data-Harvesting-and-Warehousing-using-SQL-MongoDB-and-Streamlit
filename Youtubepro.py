@@ -6,10 +6,24 @@ import time
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 
+
 Api_Id="AIzaSyAr1lXN-Dq_zChCXOD2m0LTbpTHVNl3kPc"
 api_service_name = "youtube"
 api_version = "v3"
 youtube = build(api_service_name,api_version,developerKey=Api_Id)
+
+
+client = pymongo.MongoClient("mongodb+srv://boopathi:Boo758595@guvi.rozmoe3.mongodb.net/?retryWrites=true&w=majority&appName=Guvi")
+db = client["Youtube_Pro"]
+coll = db["Youtube_data"]
+
+mydb = psycopg2.connect(host="localhost",
+            user="postgres",
+            password="758595",
+            database= "Youtube",
+            port = "5432"
+            )
+cursor  = mydb. cursor ()
 
 
 def get_channel_info(channel_id):
@@ -85,7 +99,6 @@ def get_channel_videos(channel_id):
     return video_ids
 
 
-
 def get_video_info(video_ids):
 
     video_data = []
@@ -101,8 +114,6 @@ def get_video_info(video_ids):
                         Channel_Id = item['snippet']['channelId'],
                         Video_Id = item['id'],
                         Title = item['snippet']['title'],
-                        Tags = item['snippet'].get('tags'),
-                        Thumbnail = item['snippet']['thumbnails']['default']['url'],
                         Description = item['snippet']['description'],
                         Published_Date = item['snippet']['publishedAt'],
                         Duration = item['contentDetails']['duration'],
@@ -110,12 +121,9 @@ def get_video_info(video_ids):
                         Likes = item['statistics'].get('likeCount'),
                         Comments = item['statistics'].get('commentCount'),
                         Favorite_Count = item['statistics']['favoriteCount'],
-                        Definition = item['contentDetails']['definition'],
-                        Caption_Status = item['contentDetails']['caption']
                         )
             video_data.append(data)
     return video_data
-
 
 
 
@@ -156,10 +164,11 @@ def get_comment_info(video_ids):
 
 
 
+
+
 client = pymongo.MongoClient("mongodb+srv://boopathi:Boo758595@guvi.rozmoe3.mongodb.net/?retryWrites=true&w=majority&appName=Guvi")
 db = client["Youtube_Pro"]
 coll = db["Youtube_data"]
-
 
 def mongo_upload(channel_id):
     ch_details = get_channel_info(channel_id)
@@ -173,8 +182,6 @@ def mongo_upload(channel_id):
                      "comment_information":com_details})
     
     return "Channels all Data upload in Mongo DB completed successfully"
-
-
 
 
 
@@ -228,6 +235,7 @@ def channels_table():
                     
         cursor .execute(insert_query,values)
         mydb.commit()    
+
 
 
 
@@ -285,6 +293,7 @@ def playlists_table():
 
 
 
+
 def videos_table():
     mydb = psycopg2.connect(host="localhost",
         user="postgres",
@@ -337,8 +346,6 @@ def videos_table():
                         Channel_Id,
                         Video_Id, 
                         Title, 
-                        Tags,
-                        Thumbnail,
                         Description, 
                         Published_Date,
                         Duration, 
@@ -346,10 +353,8 @@ def videos_table():
                         Likes,
                         Comments,
                         Favorite_Count, 
-                        Definition, 
-                        Caption_Status 
                         )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 
                 '''
         values = (
@@ -357,20 +362,17 @@ def videos_table():
                     row['Channel_Id'],
                     row['Video_Id'],
                     row['Title'],
-                    row['Tags'],
-                    row['Thumbnail'],
                     row['Description'],
                     row['Published_Date'],
                     row['Duration'],
                     row['Views'],
                     row['Likes'],
                     row['Comments'],
-                    row['Favorite_Count'],
-                    row['Definition'],
-                    row['Caption_Status'])
+                    row['Favorite_Count'])
                                 
         cursor .execute(insert_query,values)
         mydb.commit()    
+
 
 
 def comments_table():
@@ -387,7 +389,7 @@ def comments_table():
     mydb.commit()
 
     try:
-        create_query = '''CREATE TABLE if not exists comments(Comment_Id varchar(100) primary key,
+        create_query = '''create table if not exists comments(Comment_Id varchar(100) primary key,
                         Video_Id varchar(80),
                         Comment_Text text, 
                         Channel_Name varchar(100),                        
@@ -427,15 +429,17 @@ def comments_table():
                 row['Comment_Published']
             )
     cursor .execute(insert_query,values)
-    mydb.commit()    
+    mydb.commit()
+
 
 
 def tables_upload():
+
     channels_table()
     playlists_table()
     videos_table()
     comments_table()
-
+    
     return "Channels all Data Tables Create in Postgres SQL completed successfully"
 
 
@@ -486,8 +490,8 @@ st.header("YouTube Data Harvesting and Warehousing",divider='rainbow')
 
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",width=150)
-    st.page_link("https://www.youtube.com/", label=":green[Click here! Get Channels Id from YouTube ]")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",width=180)
+    st.page_link("https://www.youtube.com/", label=":green[Click here! Get Channels Id get from YouTube ]")
     st.subheader('', divider='rainbow')
 
     st.markdown('''
@@ -495,18 +499,18 @@ with st.sidebar:
         :rainbow[Project] :sunglasses:''')
 
 
-    multi = ''' _______ YouTube is the world's most popular video-sharing platform, 
+    multi = ''' YouTube is the world's most popular video-sharing platform, 
     with over 2 billion active users. It is avaluable source of data for businesses,
     researchers, and individuals. This project will demonstrate how toharvest and 
     warehouse YouTube data using SQL, MongoDB, and Streamlit
 
-    :orange[Benefits:]
+    :orange[My Project Benefits:]
 
     1. This approach can be used to collect large amounts of data from YouTube.
     The data can be stored in avariety of ways, including MongoDB and SQL.
 
     2. The data can be analyzed using a variety of tools, including Streamlit.
-    This approach can be used toidentify trends, make predictions, and improve decision-making.
+    This approach can be used to identify trends, make predictions, and improve decision-making.
 
 
     
@@ -528,9 +532,10 @@ with st.sidebar:
 
  
     
-channel_id = st.text_input("Enter the Channel id")
+channel_id = st.text_input("Here! Please Enter the Channel id")
 
 col1, col2 ,col3= st.columns(3)
+
 
 if col1.button(":green[Collect and Store data]"):
     ch_ids=[]
@@ -552,59 +557,55 @@ db = client["Youtube_Pro"]
 coll = db["Youtube_data"]
 
 
-mydb = psycopg2.connect(host="localhost",
-            user="postgres",
-            password="758595",
-            database= "Youtube",
-            port = "5432"
-            )
-cursor  = mydb. cursor ()
+from psycopg2 import IntegrityError
 
 def migrate_to_sql(channel_name):
 
     channel_data = coll.find_one({"channel_information.Channel_Name": channel_name}, {"_id": 0})
-    if channel_data:
+    try:
+        if channel_data:
+            columns = ", ".join(channel_data["channel_information"].keys())
+            values_template = ", ".join(["%s"] * len(channel_data["channel_information"]))
+            values = tuple(channel_data["channel_information"].values())
+            
 
-        columns = ", ".join(channel_data["channel_information"].keys())
-        values_template = ", ".join(["%s"] * len(channel_data["channel_information"]))
-        values = tuple(channel_data["channel_information"].values())
-        
-
-        cursor.execute(
-            f"""
-            INSERT INTO channels ({columns})
-            VALUES ({values_template})
-            """,
-            values
-        )
-        mydb.commit()
-        return "Data migrated successfully."
-    else:
+            cursor.execute(
+                f"""
+                INSERT INTO channels ({columns})
+                VALUES ({values_template})
+                """,
+                values
+            )
+            mydb.commit()
+            return "Data migrated successfully."
+    except IntegrityError as e:
         return "Given channel details already exists."
-
+    
 
 all_channels = []
 for ch_data in coll.find({}, {"_id": 0, "channel_information.Channel_Name": 1}):
     all_channels.append(ch_data["channel_information"]["Channel_Name"])
+  
 
-uni_channel = st.selectbox("Select the Channel", all_channels)
+up_channel = st.selectbox("Select the Channel", all_channels)
 
 if col2.button(":blue[Migrate to SQL]"):
-    result = migrate_to_sql(uni_channel)
+    result = migrate_to_sql(up_channel)
     st.success(result)
 
-
+if col3.button(":red[Page Refresh]"):
+    st.success("Page Refresh Sucessfully")
 
 def simulate_loading():
     with st.spinner('Page Refreshing ...'):
         time.sleep(0.25) 
 
 
-if col3.button(':red[Page Refresh]'):
-    simulate_loading()
-    st.success('Page refresh successfully!')
+    if col3.button(':red[Page Refresh]'):
+        simulate_loading()
+        st.success('Page refresh successfully!')
 
-show_table = st.radio("Choose the Table for view",((":green[Channels]"),(":orange[Playlists]"),(":violet[Videos]"),(":grey[Comments]")))
+show_table = st.radio("Choose the Table for view",((":green[Channels]"),(":orange[Playlists]"),(":violet[Videos]"),(":blue[Comments]")))
 
 if show_table ==(":green[Channels]"): 
     show_channels_table()
@@ -615,7 +616,7 @@ elif show_table == (":orange[Playlists]"):
 elif show_table == (":violet[Videos]"):
     show_videos_table()
 
-elif show_table == (":grey[Comments]"):
+elif show_table == (":blue[Comments]"):
     show_comments_table()
 
 
@@ -628,18 +629,10 @@ mydb = psycopg2.connect(host="localhost",
             )
 cursor  = mydb. cursor ()
 
-question=st.selectbox("Select your question",("1. All the videos and the channel name",
-                                            "2. channels with most number of videos",
-                                            "3. 10 most viewed videos",
-                                            "4. comments in each videos",
-                                            "5. Videos with higest likes",
-                                            "6. likes of all videos",
-                                            "7. views of each channel",
-                                            "8. videos published in the year of 2022",
-                                            "9. average duration of all videos in each channel",
-                                            "10. videos with highest number of comments"))
+ques=st.selectbox("Select your questions :",("1. All the videos and the channel name","2. channels with most number of videos","3. 10 most viewed videos","4. comments in each videos","5. Videos with higest likes",
+                                             "6. likes of all videos","7. views of each channel","8. videos published in the year of 2022","9. average duration of all videos in each channel","10. videos with highest number of comments"))
 
-if question=="1. All the videos and the channel name":
+if ques=="1. All the videos and the channel name":
     query1='''select title as videos,channel_name as channelname from videos'''
     cursor.execute(query1)
     mydb.commit()
@@ -647,7 +640,7 @@ if question=="1. All the videos and the channel name":
     df=pd.DataFrame(t1,columns=["video title","channel name"])
     st.write(df)
 
-elif question=="2. channels with most number of videos":
+elif ques=="2. channels with most number of videos":
     query2='''select channel_name as channelname,total_videos as no_videos from channels 
                 order by total_videos desc'''
     cursor.execute(query2)
@@ -656,7 +649,7 @@ elif question=="2. channels with most number of videos":
     df2=pd.DataFrame(t2,columns=["channel name","No of videos"])
     st.write(df2)
 
-elif question=="3. 10 most viewed videos":
+elif ques=="3. 10 most viewed videos":
     query3='''select views as views,channel_name as channelname,title as videotitle from videos 
                 where views is not null order by views desc limit 10'''
     cursor.execute(query3)
@@ -665,7 +658,7 @@ elif question=="3. 10 most viewed videos":
     df3=pd.DataFrame(t3,columns=["views","channel name","videotitle"])
     st.write(df3)
 
-elif question=="4. comments in each videos":
+elif ques=="4. comments in each videos":
     query4='''select comments as no_comments,title as videotitle from videos where comments is not null'''
     cursor.execute(query4)
     mydb.commit()
@@ -673,7 +666,7 @@ elif question=="4. comments in each videos":
     df4=pd.DataFrame(t4,columns=["no of comments","videotitle"])
     st.write(df4)
 
-elif question=="5. Videos with higest likes":
+elif ques=="5. Videos with higest likes":
     query5='''select title as videotitle,channel_name as channelname,likes as likecount
                 from videos where likes is not null order by likes desc'''
     cursor.execute(query5)
@@ -682,7 +675,7 @@ elif question=="5. Videos with higest likes":
     df5=pd.DataFrame(t5,columns=["videotitle","channelname","likecount"])
     st.write(df5)
 
-elif question=="6. likes of all videos":
+elif ques=="6. likes of all videos":
     query6='''select likes as likecount,title as videotitle from videos'''
     cursor.execute(query6)
     mydb.commit()
@@ -690,7 +683,7 @@ elif question=="6. likes of all videos":
     df6=pd.DataFrame(t6,columns=["likecount","videotitle"])
     st.write(df6)
 
-elif question=="7. views of each channel":
+elif ques=="7. views of each channel":
     query7='''select channel_name as channelname ,views as totalviews from channels'''
     cursor.execute(query7)
     mydb.commit()
@@ -698,7 +691,7 @@ elif question=="7. views of each channel":
     df7=pd.DataFrame(t7,columns=["channel name","totalviews"])
     st.write(df7)
 
-elif question=="8. videos published in the year of 2022":
+elif ques=="8. videos published in the year of 2022":
     query8='''select title as video_title,published_date as videorelease,channel_name as channelname from videos
                 where extract(year from published_date)=2022'''
     cursor.execute(query8)
@@ -707,7 +700,7 @@ elif question=="8. videos published in the year of 2022":
     df8=pd.DataFrame(t8,columns=["videotitle","published_date","channelname"])
     st.write(df8)
 
-elif question=="9. average duration of all videos in each channel":
+elif ques=="9. average duration of all videos in each channel":
     query9='''select channel_name as channelname,AVG(duration) as averageduration from videos group by channel_name'''
     cursor.execute(query9)
     mydb.commit()
@@ -723,7 +716,7 @@ elif question=="9. average duration of all videos in each channel":
     df1=pd.DataFrame(T9)
     st.write(df1)
 
-elif question=="10. videos with highest number of comments":
+elif ques=="10. videos with highest number of comments":
     query10='''select title as videotitle, channel_name as channelname,comments as comments from videos where comments is
                 not null order by comments desc'''
     cursor.execute(query10)

@@ -3,19 +3,13 @@ import psycopg2
 import pandas as pd
 import streamlit as st
 import time
+from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 
-
-def Api_connect():
-    Api_Id="AIzaSyAr1lXN-Dq_zChCXOD2m0LTbpTHVNl3kPc"
-
-    api_service_name = "youtube"
-    api_version = "v3"
-    youtube = build(api_service_name,api_version,developerKey=Api_Id)
-    return youtube
-
-youtube=Api_connect()
-
+Api_Id="AIzaSyAr1lXN-Dq_zChCXOD2m0LTbpTHVNl3kPc"
+api_service_name = "youtube"
+api_version = "v3"
+youtube = build(api_service_name,api_version,developerKey=Api_Id)
 
 
 def get_channel_info(channel_id):
@@ -69,7 +63,7 @@ def get_playlist_info(channel_id):
 
 def get_channel_videos(channel_id):
     video_ids = []
-    # get Uploads playlist id
+
     res = youtube.channels().list(id=channel_id, 
                                   part='contentDetails').execute()
     playlist_id = res['items'][0]['contentDetails']['relatedPlaylists']['uploads']
@@ -130,24 +124,33 @@ def get_comment_info(video_ids):
     Comment_Information = []
 
     for video_id in video_ids:
+            try:
 
-            request = youtube.commentThreads().list(
-                    part = "snippet",
-                    videoId = video_id,
-                    maxResults = 50
-                    )
-            response= request.execute()
-            
-            for item in response["items"]:
-                    comment_information = dict(
-                            Comment_Id = item["snippet"]["topLevelComment"]["id"],
-                            Video_Id = item["snippet"]["videoId"],                            
-                            Comment_Text = item["snippet"]["topLevelComment"]["snippet"]["textOriginal"],
-                            Comment_Author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"],
-                            Comment_Published = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"])
+                request = youtube.commentThreads().list(
+                        part = "snippet",
+                        videoId = video_id,
+                        maxResults = 50
+                        )
+                response= request.execute()
+                
+                for item in response["items"]:
+                        comment_information = dict(
+                                Comment_Id = item["snippet"]["topLevelComment"]["id"],
+                                Video_Id = item["snippet"]["videoId"],                            
+                                Comment_Text = item["snippet"]["topLevelComment"]["snippet"]["textOriginal"],
+                                Comment_Author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"],
+                                Comment_Published = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"])
 
-                    Comment_Information.append(comment_information)
+                        Comment_Information.append(comment_information)
 
+
+    
+
+            except HttpError as e:
+                if e.resp.status == 403:
+                    print(f"Comments are disabled for video ID {video_ids}.")
+                else:
+                    print(f"An error occurred while fetching comments for video ID {video_ids}: {e}")
 
     return Comment_Information
 
@@ -477,24 +480,54 @@ def show_comments_table():
     return comments_table
 
 
-import streamlit as st 
 
-st.header("    YouTube Data Harvesting and Warehousing",divider='rainbow')
 st.balloons()
+st.header("YouTube Data Harvesting and Warehousing",divider='rainbow')
+
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",use_column_width=True)
+    st.image("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",width=150)
+    st.page_link("https://www.youtube.com/", label=":green[Click here! Get Channels Id from YouTube ]")
     st.subheader('', divider='rainbow')
 
-    st.caption("1. Users Giving to the Chennels ID")
-    st.caption("2. Retrieving Data From Youtube API")
-    st.caption("3. Store the Data In Mongo DB Collection")
-    st.caption("4. Migrating data to a Postgres SQL warehouse")
-    st.caption("5. Data Analysis")
-    st.caption("6. SQL Queries")
-    
-    
+    st.markdown('''
+        :blue[Welcome] :gray[To] :orange[YouTube] :green[Data Harvesting] :blue[and] :violet[Warehousing]
+        :rainbow[Project] :sunglasses:''')
 
+
+    multi = ''' _______ YouTube is the world's most popular video-sharing platform, 
+    with over 2 billion active users. It is avaluable source of data for businesses,
+    researchers, and individuals. This project will demonstrate how toharvest and 
+    warehouse YouTube data using SQL, MongoDB, and Streamlit
+
+    :orange[Benefits:]
+
+    1. This approach can be used to collect large amounts of data from YouTube.
+    The data can be stored in avariety of ways, including MongoDB and SQL.
+
+    2. The data can be analyzed using a variety of tools, including Streamlit.
+    This approach can be used toidentify trends, make predictions, and improve decision-making.
+
+
+    
+    :orange[My Project guidelines:]
+
+    1. Users Giving to the Chennels ID
+
+    2. Retrieving Data From Youtube API
+
+    3. Store the Data In Mongo DB Collection
+
+    4. Migrating to a Postgres SQL warehouse
+
+    5. Data Analysis
+
+    6. SQL Queries
+    '''
+    st.markdown(multi)
+
+ 
+    
 channel_id = st.text_input("Enter the Channel id")
 
 col1, col2 ,col3= st.columns(3)
@@ -547,7 +580,7 @@ def migrate_to_sql(channel_name):
         mydb.commit()
         return "Data migrated successfully."
     else:
-        return "Channel data not found."
+        return "Given channel details already exists."
 
 
 all_channels = []
@@ -698,5 +731,4 @@ elif question=="10. videos with highest number of comments":
     t10=cursor.fetchall()
     df10=pd.DataFrame(t10,columns=["video title","channel name","comments"])
     st.write(df10)
-
 
